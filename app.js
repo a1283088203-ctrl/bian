@@ -698,6 +698,9 @@ $("upload").onchange=async event=>{
  $("status").textContent="";
  resultReady=false;
  showResult(false);
+
+ // 后台预载 AI 模型，点开始时不再等下载。
+ getSession().catch(()=>{});
  }catch(error){
  $("status").textContent=error.message;
  }finally{
@@ -739,16 +742,32 @@ $("start").onclick=async()=>{
  // 第一步：识别主体物并输出透明背景。
  let pixels=new Uint8ClampedArray(original.pixels);
  let subjectExtracted=false;
+ let subject=null;
+ let subjectError="";
+ const modelLoaded=!!sessionPromise;
 
  try{
- const subject=await extractSubject();
+ if(!modelLoaded){
+ $("status").textContent="AI 模型加载中…（首次约 25MB）";
+ }
+
+ subject=await extractSubject();
+ }catch(error){
+ console.warn(error);
+ subject=null;
+ subjectError=
+ "主体识别不可用，已按原图缩放："+
+ (error&&error.message?error.message:"未知错误");
+ $("status").textContent=subjectError;
+ }
+
+ if(!modelLoaded&&$("status").textContent.startsWith("AI 模型加载中")){
+ $("status").textContent="";
+ }
 
  if(subject){
  pixels=subject.pixels;
  subjectExtracted=true;
- }
- }catch(error){
- console.warn(error);
  }
 
  // 第二步：对透明背景图做内容感知缩放 + 20% 高斯模糊。
@@ -776,7 +795,7 @@ $("start").onclick=async()=>{
  );
 
  resultReady=true;
- finish();
+ finish(subjectError);
  showResult(true);
  }
  };
