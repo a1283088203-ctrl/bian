@@ -3,68 +3,68 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SEAM · 内容感知实验</title>
+<title>如果看扁我</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <main>
- <section>
- <div id="originalView" class="view">
- <div id="frame">
- <canvas id="source" hidden aria-label="原图"></canvas>
- <svg id="outline" aria-hidden="true">
- <defs>
- <filter id="wobble" x="-30%" y="-30%" width="160%" height="160%">
- <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="2" seed="1" result="n">
- <animate attributeName="seed" values="1;7;3;9;5;11" dur="1s" repeatCount="indefinite" calcMode="discrete"/>
- </feTurbulence>
- <feDisplacementMap in="SourceGraphic" in2="n" scale="4"/>
- </filter>
- </defs>
- <rect id="outlineRect" fill="none" stroke="#FFFFFF" filter="url(#wobble)"/>
- </svg>
- </div>
- <img id="empty" src="title.png" alt="让图像，重新排列。">
- <label class="upload">
- <img src="upload-btn.png" alt="上传图片">
- <input id="upload" type="file" accept="image/jpeg,image/png,image/webp" aria-label="上传图片">
- </label>
- </div>
+<section>
+<div id="originalView" class="view">
+<div id="frame">
+<canvas id="source" hidden aria-label="原图"></canvas>
+<svg id="outline" aria-hidden="true">
+<defs>
+<filter id="wobble" x="-30%" y="-30%" width="160%" height="160%">
+<feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="2" seed="1" result="n">
+<animate attributeName="seed" values="1;7;3;9;5;11" dur="1s" repeatCount="indefinite" calcMode="discrete"/>
+</feTurbulence>
+<feDisplacementMap in="SourceGraphic" in2="n" scale="4"/>
+</filter>
+</defs>
+<rect id="outlineRect" fill="none" stroke="#FFFFFF" filter="url(#wobble)"/>
+</svg>
+</div>
+<img id="empty" src="title.png" alt="让图像，重新排列。">
+<label class="upload">
+<img src="upload-btn.png" alt="上传图片">
+<input id="upload" type="file" accept="image/jpeg,image/png,image/webp" aria-label="上传图片">
+</label>
+</div>
 
- <div id="resultView" class="view" hidden>
- <canvas id="result" aria-label="处理结果"></canvas>
- </div>
- </section>
+<div id="resultView" class="view" hidden>
+<canvas id="result" aria-label="处理结果"></canvas>
+</div>
+</section>
 
- <div class="bottom">
- <div id="controls">
- <label>
- <input id="horizontal" type="range" min="0" max="100" value="55" aria-label="横向压缩程度">
- </label>
+<div class="bottom">
+<div id="controls">
+<label>
+<input id="horizontal" type="range" min="0" max="100" value="55" aria-label="横向压缩程度">
+</label>
 
- <label>
- <input id="vertical" type="range" min="0" max="100" value="0" aria-label="纵向压缩程度">
- </label>
+<label>
+<input id="vertical" type="range" min="0" max="100" value="0" aria-label="纵向压缩程度">
+</label>
 
- <button id="start" class="primary">
- <img src="start-btn.png" alt="开始">
- <span hidden>处理中…</span>
- </button>
- </div>
+<button id="start" class="primary">
+<img src="start-btn.png" alt="开始">
+<span hidden>处理中…</span>
+</button>
+</div>
 
- <div id="actions" hidden>
- <button id="back">
- <img src="back-btn.png" alt="重新调整">
- </button>
- <button id="save">
- <img src="save-btn.png" alt="保存图片">
- </button>
- </div>
+<div id="actions" hidden>
+<button id="back">
+<img src="back-btn.png" alt="重新调整">
+</button>
+<button id="save">
+<img src="save-btn.png" alt="保存图片">
+</button>
+</div>
 
- <p id="status" role="status"></p>
- </div>
+<p id="status" role="status"></p>
+</div>
 
- <footer>点击背景空白处，换一种颜色</footer>
+<footer>点击背景空白处，换一种颜色</footer>
 </main>
 <script src="app.js"></script>
 </body>
