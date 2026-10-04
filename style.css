@@ -119,11 +119,25 @@ input[type=range]::-webkit-slider-thumb{
  height:auto;
 }
 #start span{
- display:inline-block;
+ display:inline-flex;
+ align-items:center;
+ justify-content:center;
  padding:14px 25px;
- border:1px solid var(--ink);
+ border:none;
  border-radius:40px;
- background:#FFFFFF;
+ background:transparent;
+}
+#start .loading::before{
+ content:"";
+ width:22px;
+ height:22px;
+ border:2px solid #ffffff40;
+ border-top-color:#FFFFFF;
+ border-radius:50%;
+ animation:loading-spin .8s linear infinite;
+}
+@keyframes loading-spin{
+ to{transform:rotate(360deg)}
 }
 button{
  padding:14px 25px;
@@ -166,6 +180,8 @@ footer{
 }
 @media(max-width:600px){
  main{padding:20px}
+ .bottom{padding-inline:20px}
+ .bottom input[type=range]{margin-inline:0}
  .view{height:48dvh}
  #frame{
   height:max(100px,calc(100% - 200px));

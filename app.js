@@ -651,6 +651,7 @@ function setStartLabel(busy){
  const start=$("start");
  const img=start.querySelector("img");
  const span=start.querySelector("span");
+ start.setAttribute("aria-busy",String(busy));
 
  if(img)img.hidden=busy;
  if(span)span.hidden=!busy;
