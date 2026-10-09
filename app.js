@@ -971,7 +971,8 @@ let endColor="";
 document.querySelectorAll("#end .swatch").forEach(swatch=>{
  swatch.onclick=()=>{
   endColor=swatch.dataset.color;
-  $("end").style.backgroundColor=endColor||"#FFFFFF";
+  // 只给中间图片区域上色，标题和底部操作区保持白色。
+  $("endBg").style.backgroundColor=endColor||"transparent";
   document.querySelectorAll("#end .swatch").forEach(s=>{
    const on=s===swatch;
    s.classList.toggle("selected",on);

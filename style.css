@@ -336,16 +336,26 @@ footer{
 }
 
 /* ===== 结束页（设计图六） ===== */
-#end{transition:background-color .3s}
+/* 背景色只铺在中间图片区域：上方标题/返回、下方色块/保存各留安全距离（设计图七） */
+.end-bg{
+ position:absolute;
+ left:8.2%;
+ width:83.6%;
+ top:13.5%;
+ height:69.4%;
+ border-radius:4cqw;
+ background:transparent;
+ transition:background-color .3s;
+}
 .end-title{
  position:absolute;
  left:55.485%;
  top:7.604%;
  width:36.295%!important;
 }
-.end-preview{height:58%}
+.end-preview{left:12%;width:76%;top:16%;height:62%}
 .end-preview canvas{animation:pop-in .5s cubic-bezier(.3,1.5,.5,1) both}
-.end-status{top:76%}
+.end-status{top:79%}
 /* 色块：外圈蓝色描边，选中后描边变灰（与设计稿尺寸一致，按舞台宽度缩放） */
 .swatches{
  position:absolute;
