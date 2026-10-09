@@ -845,6 +845,7 @@ $("start").onclick=async()=>{
   end.offsetWidth;
   end.style.animation="";
   $("endStatus").textContent=subjectError;
+  prepareEndBlob();
   go($("processing"),$("end"),$("endSave"));
  }
  }
@@ -973,6 +974,7 @@ document.querySelectorAll("#end .swatch").forEach(swatch=>{
   endColor=swatch.dataset.color;
   // 只给中间图片区域上色，标题和底部操作区保持白色。
   $("endBg").style.backgroundColor=endColor||"transparent";
+  prepareEndBlob();
   document.querySelectorAll("#end .swatch").forEach(s=>{
    const on=s===swatch;
    s.classList.toggle("selected",on);
@@ -981,32 +983,97 @@ document.querySelectorAll("#end .swatch").forEach(swatch=>{
  };
 });
 
-// 保存：透明背景直接存 PNG；选了颜色就把背景色铺在图片下面一起保存。
-$("endSave").onclick=()=>{
- if(!resultReady) return;
+// 保存用的画布：透明背景直接用结果；选了颜色就把背景色铺在图片下面。
+function endCanvas(){
+ if(!endColor) return result;
+ const canvas=document.createElement("canvas");
+ canvas.width=result.width;
+ canvas.height=result.height;
+ const ctx=canvas.getContext("2d");
+ ctx.fillStyle=endColor;
+ ctx.fillRect(0,0,canvas.width,canvas.height);
+ ctx.drawImage(result,0,0);
+ return canvas;
+}
 
- let canvas=result;
- if(endColor){
-  canvas=document.createElement("canvas");
-  canvas.width=result.width;
-  canvas.height=result.height;
-  const ctx=canvas.getContext("2d");
-  ctx.fillStyle=endColor;
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.drawImage(result,0,0);
+// 提前生成好图片文件：手机上的系统分享必须在点击的瞬间同步调用，
+// 等 toBlob 异步完成再调用会被 iOS Safari 拦截。
+let endBlob=null;
+function prepareEndBlob(){
+ endBlob=null;
+ if(!resultReady) return;
+ const color=endColor;
+ endCanvas().toBlob(blob=>{
+  // 生成期间又换了颜色，就丢弃这次结果。
+  if(color===endColor)endBlob=blob;
+ },"image/png");
+}
+
+const isWeChat=/MicroMessenger/i.test(navigator.userAgent);
+const isTouch=matchMedia("(pointer:coarse)").matches;
+
+// 微信等内置浏览器不支持下载：弹出图片，提示长按保存到相册。
+function showLongPressSave(){
+ $("saveSheetImg").src=endCanvas().toDataURL("image/png");
+ $("saveSheet").hidden=false;
+ $("saveSheetClose").focus();
+}
+$("saveSheetClose").onclick=()=>{
+ $("saveSheet").hidden=true;
+ $("endSave").focus();
+};
+
+function downloadBlob(blob){
+ const url=URL.createObjectURL(blob);
+ const link=document.createElement("a");
+ link.href=url;
+ link.download="squish.png";
+ // 部分浏览器要求链接在页面里才会触发下载。
+ document.body.appendChild(link);
+ link.click();
+ link.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),5000);
+}
+
+function deliver(blob){
+ if(isWeChat){
+  showLongPressSave();
+  return;
  }
 
- canvas.toBlob(blob=>{
+ // 手机：调起系统分享面板，里面有"存储图像 / 保存到相册"。
+ const file=new File([blob],"squish.png",{type:"image/png"});
+ if(isTouch&&navigator.canShare?.({files:[file]})){
+  navigator.share({files:[file]}).catch(error=>{
+   // 用户自己取消不算失败；其他错误退回长按保存。
+   if(error.name!=="AbortError")showLongPressSave();
+  });
+  return;
+ }
+
+ downloadBlob(blob);
+}
+
+$("endSave").onclick=()=>{
+ if(!resultReady) return;
+ $("endStatus").textContent="";
+
+ if(isWeChat){
+  showLongPressSave();
+  return;
+ }
+ if(endBlob){
+  deliver(endBlob);
+  return;
+ }
+
+ // 文件还没生成好（刚进入页面就点），异步生成后再保存。
+ endCanvas().toBlob(blob=>{
   if(!blob){
    $("endStatus").textContent="保存失败，请重试。";
    return;
   }
-  const url=URL.createObjectURL(blob);
-  const link=document.createElement("a");
-  link.href=url;
-  link.download="squish.png";
-  link.click();
-  setTimeout(()=>URL.revokeObjectURL(url),5000);
+  deliver(blob);
  },"image/png");
 };
 
@@ -1046,7 +1113,7 @@ function updatePickPreview(){
 
 document.addEventListener("click",event=>{
  // 操作图片、按钮、上传和滑块时不切换背景；首页上也不切换。
- if(event.target.closest("button,label,input,canvas,a,#home,.screen")){
+ if(event.target.closest("button,label,input,canvas,a,#home,.screen,.save-sheet")){
  return;
  }
  if(window.getSelection()?.toString()) return;
