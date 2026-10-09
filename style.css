@@ -180,45 +180,48 @@ footer{
  font-size:12px;
  opacity:.7;
 }
-/* ===== 首页 =====
-   素材直接从设计稿 SVG（390×844 画板）拆出，位置与宽度按画板百分比换算：
-   横向 = x/390，纵向 = y/844。舞台宽度不超过屏幕高度×390/844，
-   手机铺满全屏，平板/电脑上保持设计稿比例居中。 */
+/* ===== 版心 =====
+   素材直接从设计稿 SVG（390×844 画板）拆出。舞台铺满整个屏幕：
+   - 左右安全距离 --m 按设计稿比例（32/390 ≈ 8.2% 屏幕宽），宽屏上版心跟着变宽；
+   - 元素尺寸用 --u（设计稿 1px 对应的屏幕像素），取宽、高两个方向较小的缩放，
+     保证在矮宽屏上也不会撑出屏幕；
+   - 纵向位置按画板高度百分比（y/844）。 */
 #home{
  position:fixed;
  inset:0;
  z-index:10;
- display:flex;
- justify-content:center;
  background:#FFFFFF;
 }
 .home-stage{
+ --u:min(100vw/390,100dvh/844);
+ --m:8.2%;
  position:relative;
- width:min(100vw,100dvh*390/844);
+ width:100%;
  height:100%;
 }
 .home-stage img{display:block;width:100%;height:auto}
 .home-title{
  position:absolute;
- left:8.195%;
+ left:var(--m);
  top:7.302%;
- width:71.579%;
+ width:calc(279.16*var(--u));
  margin:0;
  transform-origin:left bottom;
  animation:squish-in .9s cubic-bezier(.3,1.6,.5,1) both;
 }
 .home-sub{
  position:absolute;
- left:8.195%;
+ left:var(--m);
  top:16.322%;
- width:26.936%!important;
+ width:calc(105.05*var(--u))!important;
  animation:fade-up .5s .45s ease-out both;
 }
 .home-start{
  position:absolute;
- left:25.554%;
+ /* 水平居中（不用 translate，避免和淡入动画冲突） */
+ left:calc(50% - 99.7*var(--u));
  top:85.398%;
- width:51.126%;
+ width:calc(199.39*var(--u));
  padding:0;
  border:none;
  border-radius:999px;
@@ -236,8 +239,6 @@ footer{
  background:#FFFFFF;
  animation:slide-in .4s cubic-bezier(.2,.8,.3,1) both;
 }
-/* cqw = 舞台宽度的 1%，滑块等尺寸跟着舞台缩放 */
-.screen .home-stage{container-type:inline-size}
 .screen button{
  position:absolute;
  padding:0;
@@ -248,19 +249,19 @@ footer{
 }
 .screen button:hover:not(:disabled){opacity:1}
 .screen button:focus-visible{outline:2px solid #000000;outline-offset:4px}
-.step-back{left:7.692%;top:7.346%;width:10.256%}
+.step-back{left:var(--m);top:7.346%;width:calc(40*var(--u))}
 .step-back:hover{transform:translateX(-4px)}
 .step-badge{
  position:absolute;
- left:65.592%;
+ right:var(--m);
  top:7.319%;
- width:26.323%!important;
+ width:calc(102.66*var(--u))!important;
 }
 .step-preview{
  position:absolute;
- left:7.7%;
+ left:var(--m);
+ right:var(--m);
  top:14%;
- width:84.6%;
  height:54%;
  display:flex;
  align-items:center;
@@ -273,8 +274,8 @@ footer{
 }
 .step-status{
  position:absolute;
- left:7.7%;
- right:7.7%;
+ left:var(--m);
+ right:var(--m);
  top:68%;
  margin:0;
  text-align:center;
@@ -284,9 +285,9 @@ footer{
 }
 .step-pick{
  position:absolute;
- left:7.318%;
+ left:var(--m);
  top:71.477%;
- width:60.072%;
+ width:calc(234.28*var(--u));
  border-radius:8px;
  cursor:pointer;
  transition:transform .15s;
@@ -301,7 +302,7 @@ footer{
 .step-pick:has(input:focus-visible){outline:2px solid #000000;outline-offset:4px}
 .step-pick:hover{transform:scale(1.02)}
 .step-pick:active{transform:scale(1.04,.9)}
-.step-next{left:77.172%;top:85.301%;width:14.836%;border-radius:50%!important}
+.step-next{right:var(--m);top:85.301%;width:calc(57.86*var(--u));border-radius:50%!important}
 .step-next:hover{transform:translateX(4px)}
 .step-next:active{transform:scale(1.1,.85)}
 /* 选好图片后，下一步按钮提示一下 */
@@ -311,9 +312,9 @@ footer{
 /* ===== 处理中（设计图五） ===== */
 .proc-spinner{
  position:absolute;
- left:36.79%;
+ left:calc(50% - 50*var(--u));
  top:39.565%;
- width:25.641%;
+ width:calc(100*var(--u));
  height:auto;
  overflow:visible;
 }
@@ -321,16 +322,16 @@ footer{
 .proc-spinner .arc{transition:stroke-dasharray .3s ease-out}
 .proc-label{
  position:absolute;
- left:7.926%;
+ left:var(--m);
  top:74.085%;
- width:76.062%!important;
+ width:calc(296.64*var(--u))!important;
 }
 .proc-percent{
  position:absolute;
- left:8.2%;
+ left:var(--m);
  top:86.6%;
  margin:0;
- font:700 13cqw/1 Futura,"Century Gothic","Avenir Next",Arial,sans-serif;
+ font:700 calc(50.7*var(--u))/1 Futura,"Century Gothic","Avenir Next",Arial,sans-serif;
  color:#E6E6E6;
  font-variant-numeric:tabular-nums;
 }
@@ -339,36 +340,41 @@ footer{
 /* 背景色只铺在中间图片区域：上方标题/返回、下方色块/保存各留安全距离（设计图七） */
 .end-bg{
  position:absolute;
- left:8.2%;
- width:83.6%;
+ left:var(--m);
+ right:var(--m);
  top:13.5%;
  height:69.4%;
- border-radius:4cqw;
+ border-radius:calc(16*var(--u));
  background:transparent;
  transition:background-color .3s;
 }
 .end-title{
  position:absolute;
- left:55.485%;
+ right:var(--m);
  top:7.604%;
- width:36.295%!important;
+ width:calc(141.55*var(--u))!important;
 }
-.end-preview{left:12%;width:76%;top:16%;height:62%}
+.end-preview{
+ left:calc(var(--m) + 16*var(--u));
+ right:calc(var(--m) + 16*var(--u));
+ top:16%;
+ height:62%;
+}
 .end-preview canvas{animation:pop-in .5s cubic-bezier(.3,1.5,.5,1) both}
 .end-status{top:79%}
 /* 色块：外圈蓝色描边，选中后描边变灰（与设计稿尺寸一致，按舞台宽度缩放） */
 .swatches{
  position:absolute;
- left:8.218%;
+ left:var(--m);
  top:87.179%;
  display:flex;
- gap:3.15cqw;
+ gap:calc(12.3*var(--u));
 }
 #end .swatch{
  position:relative;
- width:8.703cqw;
+ width:calc(33.94*var(--u));
  aspect-ratio:1;
- border:.626cqw solid #4CC8FC;
+ border:calc(2.44*var(--u)) solid #4CC8FC;
  border-radius:50%;
  background:var(--c);
  transition:border-color .2s,transform .15s;
@@ -378,12 +384,12 @@ footer{
 #end .swatch.selected{border-color:#E6E6E6}
 /* 透明背景：灰白棋盘格 */
 #end .swatch-clear{
- background:repeating-conic-gradient(#E6E6E6 0 25%,#FFFFFF 0 50%) 0 0/4.7cqw 4.7cqw;
+ background:repeating-conic-gradient(#E6E6E6 0 25%,#FFFFFF 0 50%) 0 0/calc(18.34*var(--u)) calc(18.34*var(--u));
 }
 .end-save{
- left:77.654%;
+ right:var(--m);
  top:85.891%;
- width:14.131%;
+ width:calc(55.11*var(--u));
  border-radius:50%!important;
 }
 .end-save:hover{transform:translateY(3px)}
@@ -427,13 +433,14 @@ footer{
  transition:transform .12s ease-out;
 }
 /* 横向图标从中心左右压扁，纵向图标从中心上下压扁 */
-.axis-x{left:8.277%;top:73.809%;width:10.346%!important;transform-origin:center}
-.axis-y{left:10.364%;top:78.727%;width:6.172%!important;transform-origin:center}
+.axis-x{left:var(--m);top:73.809%;width:calc(40.35*var(--u))!important;transform-origin:center}
+.axis-y{left:calc(var(--m) + 8.14*var(--u));top:78.727%;width:calc(24.07*var(--u))!important;transform-origin:center}
+/* 滑块从图标右侧一直延伸到右边安全距离，宽屏上跟着变长 */
 .axis-slider{
  position:absolute;
- left:22.564%;
- width:69.044%;
- height:5.913cqw;
+ left:calc(var(--m) + 56*var(--u));
+ right:var(--m);
+ height:calc(23.06*var(--u));
  display:flex;
  align-items:center;
  /* top 取设计稿轨道中心线，再上移自身一半 */
@@ -443,23 +450,23 @@ footer{
 .axis-slider-y{top:80.962%}
 .axis-slider input[type=range]{
  width:100%;
- height:3.038cqw;
+ height:calc(11.85*var(--u));
  margin:0;
  border-radius:999px;
  background:#E6E6E6;
 }
 .axis-slider input[type=range]::-webkit-slider-thumb{
- width:5.913cqw;
- height:5.913cqw;
- border:.55cqw solid #FFFFFF;
+ width:calc(23.06*var(--u));
+ height:calc(23.06*var(--u));
+ border:calc(2.13*var(--u)) solid #FFFFFF;
  background:#000000;
  transition:transform .15s;
 }
 .axis-slider input[type=range]:active::-webkit-slider-thumb{transform:scale(1.15)}
 .axis-slider input[type=range]::-moz-range-thumb{
- width:4.8cqw;
- height:4.8cqw;
- border:.55cqw solid #FFFFFF;
+ width:calc(18.8*var(--u));
+ height:calc(18.8*var(--u));
+ border:calc(2.13*var(--u)) solid #FFFFFF;
  border-radius:50%;
  background:#000000;
 }
