@@ -7,7 +7,90 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<main>
+<!-- 首页：按设计图摆放，START 进入原有处理页 -->
+<div id="home">
+<div class="home-stage">
+<h1 class="home-title"><img src="home-title.svg" alt="SQUISH"></h1>
+<img class="home-sub" src="home-sub.svg" alt="挤～挤">
+<button id="enter" class="home-start"><img src="home-start.svg" alt="START"></button>
+</div>
+</div>
+
+<!-- 第 1 步：选择图片（设计图二） -->
+<div id="step1" class="screen" hidden>
+<div class="home-stage">
+<button id="step1Back" class="step-back"><img src="step-back.svg" alt="返回首页"></button>
+<img class="step-badge" src="step-badge-1.svg" alt="第 1 步，共 3 步">
+<div class="step-preview">
+<canvas id="pickPreview" hidden aria-label="已选图片预览"></canvas>
+</div>
+<p id="step1Status" class="step-status" role="status"></p>
+<!-- 用 label 包住文件输入框：手机上点击直接弹出系统相册 -->
+<label class="step-pick">
+<img src="step-pick.svg" alt="">
+<input id="pick" type="file" accept="image/jpeg,image/png,image/webp" aria-label="选择图片">
+</label>
+<button id="step1Next" class="step-next"><img src="step-next.svg" alt="下一步"></button>
+</div>
+</div>
+
+<!-- 第 2 步：调整压缩程度（设计图三），滑块沿用原有 #horizontal / #vertical -->
+<div id="step2" class="screen" hidden>
+<div class="home-stage">
+<button id="step2Back" class="step-back"><img src="step-back.svg" alt="返回选择图片"></button>
+<img class="step-badge" src="step-badge-2.svg" alt="第 2 步，共 3 步">
+<div class="step-preview">
+<canvas id="adjustPreview" aria-label="待处理图片"></canvas>
+</div>
+<p id="step2Status" class="step-status" role="status"></p>
+<img id="iconX" class="axis-icon axis-x" src="icon-x.svg" alt="">
+<div class="axis-slider axis-slider-x">
+<input id="sliderX" type="range" min="0" max="100" value="55" aria-label="横向压缩程度">
+</div>
+<img id="iconY" class="axis-icon axis-y" src="icon-y.svg" alt="">
+<div class="axis-slider axis-slider-y">
+<input id="sliderY" type="range" min="0" max="100" value="0" aria-label="纵向压缩程度">
+</div>
+<button id="step2Next" class="step-next"><img src="step-next.svg" alt="开始处理"></button>
+</div>
+</div>
+
+<!-- 处理中（设计图五） -->
+<div id="processing" class="screen" hidden>
+<div class="home-stage">
+<button id="processingBack" class="step-back"><img src="step-back.svg" alt="取消处理，返回调整"></button>
+<!-- 进度环：灰色底环 + 蓝色圆头弧线，长度 = 实际进度。
+     和设计稿一样从 12 点方向开始，逆时针增长。 -->
+<svg class="proc-spinner" viewBox="143.48 333.93 100 100" aria-hidden="true">
+<circle cx="193.48" cy="383.93" r="44.51" fill="none" stroke="#e6e6e6" stroke-width="5.79"/>
+<path id="progressArc" class="arc" pathLength="100" fill="none" stroke="#4cc8fc" stroke-width="5.79" stroke-linecap="round" stroke-dasharray="0 100" d="M193.48,339.42a44.51,44.51 0 1,0 0,89.02a44.51,44.51 0 1,0 0,-89.02"/>
+</svg>
+<img class="proc-label" src="processing-label.svg" alt="处理中 PROCESSING">
+<p id="progressText" class="proc-percent" role="progressbar" aria-label="处理进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">0%</p>
+</div>
+</div>
+
+<!-- 结束页（设计图六）：底部色块切换整体背景 -->
+<div id="end" class="screen" hidden>
+<div class="home-stage">
+<button id="endBack" class="step-back"><img src="step-back.svg" alt="返回调整"></button>
+<img class="end-title" src="end-title.svg" alt="SQUISH">
+<div class="step-preview end-preview">
+<canvas id="endResult" aria-label="处理结果"></canvas>
+</div>
+<p id="endStatus" class="step-status end-status" role="status"></p>
+<div class="swatches" role="radiogroup" aria-label="背景颜色">
+<button class="swatch swatch-clear selected" role="radio" aria-checked="true" data-color="" aria-label="透明背景"></button>
+<button class="swatch" role="radio" aria-checked="false" data-color="#FFFFFF" aria-label="白色" style="--c:#FFFFFF"></button>
+<button class="swatch" role="radio" aria-checked="false" data-color="#FAEE40" aria-label="黄色" style="--c:#FAEE40"></button>
+<button class="swatch" role="radio" aria-checked="false" data-color="#4CC8FC" aria-label="蓝色" style="--c:#4CC8FC"></button>
+<button class="swatch" role="radio" aria-checked="false" data-color="#FA5FFC" aria-label="粉色" style="--c:#FA5FFC"></button>
+</div>
+<button id="endSave" class="end-save"><img src="end-save.svg" alt="保存图片"></button>
+</div>
+</div>
+
+<main hidden>
 <section>
 <div id="originalView" class="view">
 <div id="frame">

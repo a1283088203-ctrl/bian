@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="300.97 719.94 57.86 57.86">
+<style>.cls-1{fill:#4cc8fc}.cls-2{fill:#faee40}.cls-3{fill:#e6e6e6}</style>
+  <g>
+    <g>
+      <circle class="cls-2" cx="329.9" cy="748.87" r="27.48"/>
+      <path class="cls-1" d="M329.9,777.8c-15.95,0-28.93-12.98-28.93-28.93s12.98-28.93,28.93-28.93,28.93,12.98,28.93,28.93-12.98,28.93-28.93,28.93ZM329.9,722.83c-14.36,0-26.04,11.68-26.04,26.04s11.68,26.04,26.04,26.04,26.04-11.68,26.04-26.04-11.68-26.04-26.04-26.04Z"/>
+    </g>
+    <rect class="cls-1" x="311.43" y="748.02" width="31.34" height="2.89"/>
+    <rect class="cls-1" x="337.13" y="728.76" width="2.89" height="27.8" transform="translate(-359.44 319.63) rotate(-34.27)"/>
+    <rect class="cls-1" x="325.57" y="753.3" width="26.34" height="2.89" transform="translate(-466.61 565.55) rotate(-52.61)"/>
+  </g>
+</svg>

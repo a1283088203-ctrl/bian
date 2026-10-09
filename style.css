@@ -56,7 +56,9 @@ main{
  width:1px;height:1px;
  opacity:0;
 }
-.upload:focus-within{outline:2px solid;outline-offset:5px}
+.upload:has(input:focus-visible){outline:2px solid;outline-offset:5px}
+/* 手机点击时不出现系统灰色/蓝色高亮块 */
+button,label,input{-webkit-tap-highlight-color:transparent}
 section{
  flex:1;
  display:flex;
@@ -178,6 +180,291 @@ footer{
  font-size:12px;
  opacity:.7;
 }
+/* ===== 首页 =====
+   素材直接从设计稿 SVG（390×844 画板）拆出，位置与宽度按画板百分比换算：
+   横向 = x/390，纵向 = y/844。舞台宽度不超过屏幕高度×390/844，
+   手机铺满全屏，平板/电脑上保持设计稿比例居中。 */
+#home{
+ position:fixed;
+ inset:0;
+ z-index:10;
+ display:flex;
+ justify-content:center;
+ background:#FFFFFF;
+}
+.home-stage{
+ position:relative;
+ width:min(100vw,100dvh*390/844);
+ height:100%;
+}
+.home-stage img{display:block;width:100%;height:auto}
+.home-title{
+ position:absolute;
+ left:8.195%;
+ top:7.302%;
+ width:71.579%;
+ margin:0;
+ transform-origin:left bottom;
+ animation:squish-in .9s cubic-bezier(.3,1.6,.5,1) both;
+}
+.home-sub{
+ position:absolute;
+ left:8.195%;
+ top:16.322%;
+ width:26.936%!important;
+ animation:fade-up .5s .45s ease-out both;
+}
+.home-start{
+ position:absolute;
+ left:25.554%;
+ top:85.398%;
+ width:51.126%;
+ padding:0;
+ border:none;
+ border-radius:999px;
+ background:transparent;
+ transition:transform .15s;
+ animation:fade-up .5s .6s ease-out both;
+}
+/* ===== 步骤页通用（设计图二、三，同一 390×844 画板换算） ===== */
+.screen{
+ position:fixed;
+ inset:0;
+ z-index:9;
+ display:flex;
+ justify-content:center;
+ background:#FFFFFF;
+ animation:slide-in .4s cubic-bezier(.2,.8,.3,1) both;
+}
+/* cqw = 舞台宽度的 1%，滑块等尺寸跟着舞台缩放 */
+.screen .home-stage{container-type:inline-size}
+.screen button{
+ position:absolute;
+ padding:0;
+ border:none;
+ border-radius:0;
+ background:transparent;
+ transition:transform .15s;
+}
+.screen button:hover:not(:disabled){opacity:1}
+.screen button:focus-visible{outline:2px solid #000000;outline-offset:4px}
+.step-back{left:7.692%;top:7.346%;width:10.256%}
+.step-back:hover{transform:translateX(-4px)}
+.step-badge{
+ position:absolute;
+ left:65.592%;
+ top:7.319%;
+ width:26.323%!important;
+}
+.step-preview{
+ position:absolute;
+ left:7.7%;
+ top:14%;
+ width:84.6%;
+ height:54%;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+}
+.step-preview canvas{
+ max-width:100%;
+ max-height:100%;
+ animation:pop-in .45s cubic-bezier(.3,1.5,.5,1) both;
+}
+.step-status{
+ position:absolute;
+ left:7.7%;
+ right:7.7%;
+ top:68%;
+ margin:0;
+ text-align:center;
+ font-size:13px;
+ line-height:1.5;
+ color:#000000;
+}
+.step-pick{
+ position:absolute;
+ left:7.318%;
+ top:71.477%;
+ width:60.072%;
+ border-radius:8px;
+ cursor:pointer;
+ transition:transform .15s;
+}
+.step-pick input{
+ position:absolute;
+ width:1px;height:1px;
+ opacity:0;
+ pointer-events:none;
+}
+/* 只在键盘操作时显示焦点框，点击/触摸后不留黑边 */
+.step-pick:has(input:focus-visible){outline:2px solid #000000;outline-offset:4px}
+.step-pick:hover{transform:scale(1.02)}
+.step-pick:active{transform:scale(1.04,.9)}
+.step-next{left:77.172%;top:85.301%;width:14.836%;border-radius:50%!important}
+.step-next:hover{transform:translateX(4px)}
+.step-next:active{transform:scale(1.1,.85)}
+/* 选好图片后，下一步按钮提示一下 */
+.step-next.ready{animation:nudge 1.4s .3s ease-in-out infinite}
+.screen.leaving,main.leaving{animation:slide-out .35s ease-in forwards}
+
+/* ===== 处理中（设计图五） ===== */
+.proc-spinner{
+ position:absolute;
+ left:36.79%;
+ top:39.565%;
+ width:25.641%;
+ height:auto;
+ overflow:visible;
+}
+/* 蓝色弧线随进度平滑变长 */
+.proc-spinner .arc{transition:stroke-dasharray .3s ease-out}
+.proc-label{
+ position:absolute;
+ left:7.926%;
+ top:74.085%;
+ width:76.062%!important;
+}
+.proc-percent{
+ position:absolute;
+ left:8.2%;
+ top:86.6%;
+ margin:0;
+ font:700 13cqw/1 Futura,"Century Gothic","Avenir Next",Arial,sans-serif;
+ color:#E6E6E6;
+ font-variant-numeric:tabular-nums;
+}
+
+/* ===== 结束页（设计图六） ===== */
+#end{transition:background-color .3s}
+.end-title{
+ position:absolute;
+ left:55.485%;
+ top:7.604%;
+ width:36.295%!important;
+}
+.end-preview{height:58%}
+.end-preview canvas{animation:pop-in .5s cubic-bezier(.3,1.5,.5,1) both}
+.end-status{top:76%}
+/* 色块：外圈蓝色描边，选中后描边变灰（与设计稿尺寸一致，按舞台宽度缩放） */
+.swatches{
+ position:absolute;
+ left:8.218%;
+ top:87.179%;
+ display:flex;
+ gap:3.15cqw;
+}
+#end .swatch{
+ position:relative;
+ width:8.703cqw;
+ aspect-ratio:1;
+ border:.626cqw solid #4CC8FC;
+ border-radius:50%;
+ background:var(--c);
+ transition:border-color .2s,transform .15s;
+}
+#end .swatch:hover{transform:scale(1.08)}
+#end .swatch:active{transform:scale(1.15,.85)}
+#end .swatch.selected{border-color:#E6E6E6}
+/* 透明背景：灰白棋盘格 */
+#end .swatch-clear{
+ background:repeating-conic-gradient(#E6E6E6 0 25%,#FFFFFF 0 50%) 0 0/4.7cqw 4.7cqw;
+}
+.end-save{
+ left:77.654%;
+ top:85.891%;
+ width:14.131%;
+ border-radius:50%!important;
+}
+.end-save:hover{transform:translateY(3px)}
+.end-save:active{transform:scale(1.1,.85)}
+
+/* ===== 第 2 步：调整压缩程度（设计图三） ===== */
+#step2 .step-preview{height:58%}
+.axis-icon{
+ position:absolute;
+ transition:transform .12s ease-out;
+}
+/* 横向图标从中心左右压扁，纵向图标从中心上下压扁 */
+.axis-x{left:8.277%;top:73.809%;width:10.346%!important;transform-origin:center}
+.axis-y{left:10.364%;top:78.727%;width:6.172%!important;transform-origin:center}
+.axis-slider{
+ position:absolute;
+ left:22.564%;
+ width:69.044%;
+ height:5.913cqw;
+ display:flex;
+ align-items:center;
+ /* top 取设计稿轨道中心线，再上移自身一半 */
+ translate:0 -50%;
+}
+.axis-slider-x{top:75.371%}
+.axis-slider-y{top:80.962%}
+.axis-slider input[type=range]{
+ width:100%;
+ height:3.038cqw;
+ margin:0;
+ border-radius:999px;
+ background:#E6E6E6;
+}
+.axis-slider input[type=range]::-webkit-slider-thumb{
+ width:5.913cqw;
+ height:5.913cqw;
+ border:.55cqw solid #FFFFFF;
+ background:#000000;
+ transition:transform .15s;
+}
+.axis-slider input[type=range]:active::-webkit-slider-thumb{transform:scale(1.15)}
+.axis-slider input[type=range]::-moz-range-thumb{
+ width:4.8cqw;
+ height:4.8cqw;
+ border:.55cqw solid #FFFFFF;
+ border-radius:50%;
+ background:#000000;
+}
+.axis-slider input[type=range]:focus-visible{outline:2px solid #000000;outline-offset:4px}
+
+@keyframes slide-in{from{opacity:0;translate:40px 0}}
+@keyframes slide-out{to{opacity:0;translate:-40px 0;visibility:hidden}}
+@keyframes pop-in{0%{opacity:0;transform:scale(1.3,.2)}60%{opacity:1;transform:scale(.95,1.06)}}
+@keyframes nudge{0%,100%{translate:0}50%{translate:6px 0}}
+
+.home-start:hover:not(:disabled){opacity:1;transform:scale(1.04)}
+.home-start:active{transform:scale(1.08,.82)}
+.home-start:focus-visible{outline:2px solid #000000;outline-offset:4px}
+
+/* 点 START：标题、副标题、按钮一起淡出 */
+#home.leaving{animation:home-out .45s .25s ease-in forwards}
+#home.leaving .home-title,
+#home.leaving .home-sub,
+#home.leaving .home-start{animation:fade-down .3s ease-in forwards}
+
+@keyframes squish-in{
+ 0%{transform:scale(1.25,.1);opacity:0}
+ 60%{transform:scale(.92,1.12);opacity:1}
+ 100%{transform:none}
+}
+@keyframes fade-up{
+ from{opacity:0;translate:0 12px}
+}
+@keyframes fade-down{
+ to{opacity:0;translate:0 12px}
+}
+@keyframes home-out{
+ to{opacity:0;visibility:hidden}
+}
+main{animation:fade-in .35s ease-out}
+@keyframes fade-in{from{opacity:0}}
+
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{
+  animation-duration:.01ms!important;
+  animation-delay:0s!important;
+  animation-iteration-count:1!important;
+  transition:none!important;
+ }
+}
+
 @media(max-width:600px){
  main{padding:20px}
  .bottom{padding-inline:20px}

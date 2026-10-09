@@ -635,6 +635,7 @@ function showResult(show){
 function setBusy(value){
  busy=value;
  $("upload").disabled=value;
+ $("pick").disabled=value;
  $("horizontal").disabled=value;
  $("vertical").disabled=value;
 }
@@ -645,7 +646,26 @@ function finish(message=""){
  setBusy(false);
  setStartLabel(false);
  $("status").textContent=message;
+
+ // 在处理中页面出错或取消：回到第 2 步并显示原因。
+ if(!$("processing").hidden&&!resultReady){
+  $("step2Status").textContent=message;
+  go($("processing"),$("step2"),$("sliderX"));
+ }
 }
+
+// 处理中页面的百分比。
+function setProgress(value){
+ const percent=Math.max(0,Math.min(100,Math.round(value)));
+ const text=$("progressText");
+ text.textContent=percent+"%";
+ text.setAttribute("aria-valuenow",String(percent));
+ // 进度环：pathLength=100，虚线长度直接等于百分比。
+ $("progressArc").setAttribute("stroke-dasharray",`${percent} 100`);
+}
+
+// 每次开始处理递增；取消时也递增，让正在进行的那次处理作废。
+let runId=0;
 
 function setStartLabel(busy){
  const start=$("start");
@@ -702,8 +722,10 @@ $("upload").onchange=async event=>{
 
  // 后台预载 AI 模型，点开始时不再等下载。
  getSession().catch(()=>{});
+ updatePickPreview();
  }catch(error){
  $("status").textContent=error.message;
+ $("step1Status").textContent=error.message;
  }finally{
  bitmap?.close();
  setBusy(false);
@@ -739,6 +761,9 @@ $("start").onclick=async()=>{
 
  setBusy(true);
  setStartLabel(true);
+ resultReady=false;
+ const run=++runId;
+ setProgress(0);
 
  // 第一步：识别主体物并输出透明背景。
  let pixels=new Uint8ClampedArray(original.pixels);
@@ -766,6 +791,10 @@ $("start").onclick=async()=>{
  $("status").textContent="";
  }
 
+ // 识别期间用户点了返回取消。
+ if(run!==runId) return;
+ setProgress(10);
+
  if(subject){
  pixels=subject.pixels;
  subjectExtracted=true;
@@ -780,6 +809,11 @@ $("start").onclick=async()=>{
  };
 
  worker.onmessage=({data})=>{
+ // 进度：识别 0–10%，缩放 10–90%，模糊/折角 90–99%。
+ if(data.type==="progress")setProgress(10+data.value*80);
+ if(data.type==="blur")setProgress(92);
+ if(data.type==="poly")setProgress(96);
+
  if(data.type==="error"){
  finish(data.message);
  }
@@ -796,8 +830,23 @@ $("start").onclick=async()=>{
  );
 
  resultReady=true;
+ setProgress(100);
  finish(subjectError);
  showResult(true);
+
+ // 处理中页面 → 结束页。
+ if(!$("processing").hidden){
+  const end=$("endResult");
+  end.width=result.width;
+  end.height=result.height;
+  end.getContext("2d").drawImage(result,0,0);
+  // 重新触发进场动画
+  end.style.animation="none";
+  end.offsetWidth;
+  end.style.animation="";
+  $("endStatus").textContent=subjectError;
+  go($("processing"),$("end"),$("endSave"));
+ }
  }
  };
 
@@ -815,11 +864,6 @@ $("start").onclick=async()=>{
  }catch(error){
  finish("无法启动处理线程："+error.message);
  }
-};
-
-$("back").onclick=()=>{
- showResult(false);
- $("status").textContent="";
 };
 
 $("save").onclick=()=>{
@@ -841,9 +885,167 @@ $("save").onclick=()=>{
  },"image/png");
 };
 
+// 页面切换：from 播放退场动画后隐藏，to 立即显示（自带进场动画）。
+function go(from,to,focus){
+ if(from.classList.contains("leaving")) return;
+
+ from.classList.add("leaving");
+ to.classList.remove("leaving");
+ to.hidden=false;
+
+ const done=()=>{
+  // 已完成，或期间又切回了这个页面，就不再隐藏。
+  if(from.hidden||!from.classList.contains("leaving")) return;
+  from.hidden=true;
+  from.classList.remove("leaving");
+  focus?.focus();
+ };
+ from.addEventListener("animationend",function end(e){
+  if(e.target!==from) return;
+  from.removeEventListener("animationend",end);
+  done();
+ });
+ // 关闭动画（减少动态效果）时 animationend 可能不触发，兜底。
+ setTimeout(done,900);
+}
+
+const main=document.querySelector("main");
+
+// 首页 START → 第 1 步。
+$("enter").onclick=()=>go($("home"),$("step1"),$("pick"));
+
+// 第 1 步：选择图片，复用原有上传的校验和读取逻辑。
+$("pick").onchange=async event=>{
+ await $("upload").onchange(event);
+ // 清空，允许再次选择同一张图片。
+ event.target.value="";
+};
+$("step1Back").onclick=()=>go($("step1"),$("home"),$("enter"));
+$("step1Next").onclick=()=>{
+ if(!original){
+  $("step1Status").textContent="请先选择一张图片。";
+  return;
+ }
+ $("step1Status").textContent="";
+
+ // 第 2 步中间显示待处理图片。
+ const preview=$("adjustPreview");
+ preview.width=source.width;
+ preview.height=source.height;
+ preview.getContext("2d").drawImage(source,0,0);
+ go($("step1"),$("step2"),$("sliderX"));
+};
+
+// 第 2 步：滑块与原有 #horizontal / #vertical 同步，左侧图标按同样比例压扁示意。
+function syncAxis(){
+ const x=Number($("sliderX").value)/100;
+ const y=Number($("sliderY").value)/100;
+ $("horizontal").value=$("sliderX").value;
+ $("vertical").value=$("sliderY").value;
+ // 与处理逻辑一致：滑到底删除该方向 85% 的尺寸。
+ $("iconX").style.transform=`scaleX(${1-x*.85})`;
+ $("iconY").style.transform=`scaleY(${1-y*.85})`;
+ $("step2Status").textContent="";
+}
+$("sliderX").oninput=syncAxis;
+$("sliderY").oninput=syncAxis;
+syncAxis();
+
+$("step2Back").onclick=()=>go($("step2"),$("step1"),$("pick"));
+$("step2Next").onclick=()=>{
+ if(busy) return;
+ if($("sliderX").value==="0"&&$("sliderY").value==="0"){
+  $("step2Status").textContent="请调高横向或纵向滑块。";
+  return;
+ }
+ syncAxis();
+ // 进入处理中页面并开始处理；完成后自动跳到结果页（处理、结果、保存沿用原逻辑）。
+ showResult(false);
+ setProgress(0);
+ go($("step2"),$("processing"),$("processingBack"));
+ $("start").onclick();
+};
+
+// 结束页：点色块切换整体背景，选中的色块描边变灰；第一个是透明背景。
+let endColor="";
+document.querySelectorAll("#end .swatch").forEach(swatch=>{
+ swatch.onclick=()=>{
+  endColor=swatch.dataset.color;
+  $("end").style.backgroundColor=endColor||"#FFFFFF";
+  document.querySelectorAll("#end .swatch").forEach(s=>{
+   const on=s===swatch;
+   s.classList.toggle("selected",on);
+   s.setAttribute("aria-checked",String(on));
+  });
+ };
+});
+
+// 保存：透明背景直接存 PNG；选了颜色就把背景色铺在图片下面一起保存。
+$("endSave").onclick=()=>{
+ if(!resultReady) return;
+
+ let canvas=result;
+ if(endColor){
+  canvas=document.createElement("canvas");
+  canvas.width=result.width;
+  canvas.height=result.height;
+  const ctx=canvas.getContext("2d");
+  ctx.fillStyle=endColor;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(result,0,0);
+ }
+
+ canvas.toBlob(blob=>{
+  if(!blob){
+   $("endStatus").textContent="保存失败，请重试。";
+   return;
+  }
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement("a");
+  link.href=url;
+  link.download="squish.png";
+  link.click();
+  setTimeout(()=>URL.revokeObjectURL(url),5000);
+ },"image/png");
+};
+
+$("endBack").onclick=()=>{
+ $("endStatus").textContent="";
+ go($("end"),$("step2"),$("sliderX"));
+};
+
+// 处理中点返回：取消本次处理，回到第 2 步。
+$("processingBack").onclick=()=>{
+ runId++;
+ finish("");
+};
+
+// 结果页"重新调整"回到第 2 步。
+$("back").onclick=()=>{
+ if(busy) return;
+ showResult(false);
+ $("status").textContent="";
+ go(main,$("step2"),$("sliderX"));
+};
+
+// 上传成功后在第 1 步显示预览，并点亮下一步按钮。
+function updatePickPreview(){
+ const preview=$("pickPreview");
+ preview.width=source.width;
+ preview.height=source.height;
+ preview.getContext("2d").drawImage(source,0,0);
+ preview.hidden=false;
+ // 重新触发进场动画
+ preview.style.animation="none";
+ preview.offsetWidth;
+ preview.style.animation="";
+ $("step1Status").textContent="";
+ $("step1Next").classList.add("ready");
+}
+
 document.addEventListener("click",event=>{
- // 操作图片、按钮、上传和滑块时不切换背景。
- if(event.target.closest("button,label,input,canvas,a")){
+ // 操作图片、按钮、上传和滑块时不切换背景；首页上也不切换。
+ if(event.target.closest("button,label,input,canvas,a,#home,.screen")){
  return;
  }
  if(window.getSelection()?.toString()) return;
